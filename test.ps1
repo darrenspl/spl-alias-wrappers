@@ -25,25 +25,54 @@ function Check([string]$What, $Want, $Got) {
     }
 }
 
+# Invoke-Child <arguments> [text to type in]: start a fresh copy of this same
+# PowerShell and return everything it printed, as plain text.
+#
+# This uses .NET's process class on purpose. When PowerShell starts another
+# PowerShell with &, Windows PowerShell 5.1 reads the child's output as XML,
+# and one plain line (or a hidden progress note) makes it stop with an error.
+function Invoke-Child([string[]]$ArgList, [string]$InputText = '') {
+    $info = New-Object System.Diagnostics.ProcessStartInfo
+    $info.FileName = $shell
+    # Quote each argument the way Windows and .NET both split them back apart.
+    $info.Arguments = ($ArgList | ForEach-Object {
+        '"' + (($_ -replace '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"'
+    }) -join ' '
+    $info.UseShellExecute = $false
+    $info.RedirectStandardInput = $true
+    $info.RedirectStandardOutput = $true
+    $info.RedirectStandardError = $true
+    $proc = [System.Diagnostics.Process]::Start($info)
+    $proc.StandardInput.Write($InputText)
+    $proc.StandardInput.Close()
+    $errors = $proc.StandardError.ReadToEndAsync()
+    $output = $proc.StandardOutput.ReadToEnd()
+    $proc.WaitForExit()
+    $lines = ($output + $errors.Result) -split "\r?\n" |
+             Where-Object { $_ -notmatch '^#< CLIXML' -and $_ -notmatch '^<Objs ' } |
+             ForEach-Object { $_.TrimEnd() }
+    return (($lines -join "`n").Trim())
+}
+
 # Run <settings file contents> <code> [code to run before loading]: a fresh
 # PowerShell with no profile, the given saved settings, aliases.ps1 loaded,
-# then the code. Returns everything it printed, errors included, as one string.
+# then the code. Returns everything it printed, errors included.
 function Run([string]$Settings, [string]$Code, [string]$Before = '') {
     $configRoot = Join-Path $sandbox ([guid]::NewGuid())
     $dir = Join-Path $configRoot 'spl-alias-wrappers'
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
     if ($Settings) { [IO.File]::WriteAllText((Join-Path $dir 'config'), $Settings) }
     $q = $source -replace "'", "''"
-    # Send the child's error text to its normal output. Windows PowerShell 5.1
-    # tries to read a child PowerShell's error stream as XML and fails on
-    # plain text, which is exactly what the shortcuts print on a miss.
-    $text = "[Console]::SetError([Console]::Out)`n$Before`n. '$q'`n$Code"
+    # Error text goes to normal output so it arrives in order, and progress
+    # notes are switched off so they never mix in.
+    $text = "`$ProgressPreference = 'SilentlyContinue'`n" +
+            "[Console]::SetError([Console]::Out)`n$Before`n. '$q'`n$Code"
     # An encoded command survives quotes and new lines on every OS and edition.
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($text))
-    $out = WithSettings $configRoot {
-        & $shell -NoProfile -NonInteractive -ExecutionPolicy Bypass -OutputFormat Text -EncodedCommand $encoded 2>&1
-    }
-    return ((@($out) | ForEach-Object { "$_".TrimEnd() }) -join "`n").Trim()
+    return (WithSettings $configRoot {
+        Invoke-Child @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+                       '-OutputFormat', 'Text', '-EncodedCommand', $encoded)
+    })
 }
 
 # WithSettings <folder> <block>: run the block with the settings folder pointed
@@ -108,12 +137,8 @@ try {
     $uninstaller = Join-Path $repo 'uninstall.ps1'
     function Invoke-Script([string]$ConfigRoot, [string]$Answers, [string[]]$ScriptArgs) {
         WithSettings $ConfigRoot {
-            if ($null -ne $Answers) {
-                $Answers | & $shell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File @ScriptArgs *> $null
-            } else {
-                & $shell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File @ScriptArgs *> $null
-            }
-        }
+            Invoke-Child (@('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File') + $ScriptArgs) $Answers
+        } | Out-Null
     }
     function MarkCount([string]$Path) {
         if (-not (Test-Path -LiteralPath $Path)) { return 0 }
@@ -124,16 +149,18 @@ try {
     $c1 = Join-Path $sandbox 'conf1'; $p1 = Join-Path $sandbox 'p1/profile.ps1'
     New-Item -ItemType Directory -Force -Path (Split-Path $p1) | Out-Null
     [IO.File]::WriteAllText($p1, "`$KEEP_ME = 1`n")
-    Invoke-Script $c1 $null @($installer, '-NoPrompt', '-ProfilePath', $p1)
-    Invoke-Script $c1 $null @($installer, '-NoPrompt', '-ProfilePath', $p1)
+    Invoke-Script $c1 '' @($installer, '-NoPrompt', '-ProfilePath', $p1)
+    Invoke-Script $c1 '' @($installer, '-NoPrompt', '-ProfilePath', $p1)
     $conf1 = Join-Path $c1 'spl-alias-wrappers/config'
     Check 'install adds the load line once, even run twice' 1 (MarkCount $p1)
     Check 'install -NoPrompt saves the default names' 'True' ((Lines $conf1) -contains 'cc=cc')
 
+    $loadText = "`$ProgressPreference = 'SilentlyContinue'; . '$($p1 -replace "'", "''")'; (Get-Command lsa).CommandType"
     $loaded = WithSettings $c1 {
-        & $shell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ". '$($p1 -replace "'", "''")'; (Get-Command lsa).CommandType" 2>&1
+        Invoke-Child @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand',
+                       [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($loadText)))
     }
-    Check 'the profile it writes really loads the shortcuts' 'Function' ("$loaded".Trim())
+    Check 'the profile it writes really loads the shortcuts' 'Function' $loaded
 
     $c2 = Join-Path $sandbox 'conf2'; $p2 = Join-Path $sandbox 'p2/profile.ps1'
     # Answers, in order: change names? y, lsa, c, lsd, cc as cl, cx left out, safety off? n
@@ -150,7 +177,7 @@ try {
     Check 'install finishes when the answers run out' 'True' `
           ((Lines (Join-Path $c3 'spl-alias-wrappers/config')) -contains 'cx=cx')
 
-    Invoke-Script $c1 $null @($uninstaller, '-ProfilePath', $p1)
+    Invoke-Script $c1 '' @($uninstaller, '-ProfilePath', $p1)
     Check 'uninstall removes the load line' 0 (MarkCount $p1)
     Check 'uninstall leaves the rest of the profile alone' 'True' ((Lines $p1) -contains '$KEEP_ME = 1')
     Check 'uninstall keeps the saved names for bash' 'True' (Test-Path -LiteralPath $conf1)
