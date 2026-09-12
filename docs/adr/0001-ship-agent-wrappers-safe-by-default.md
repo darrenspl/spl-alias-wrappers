@@ -39,10 +39,15 @@ one variable in his own startup file and his daily use is unchanged.
 
 ## Cost
 
-Darren has one extra line in his own startup file, and it must sit above the
-line that sources `aliases.sh`. `install.sh` does not add it, on purpose.
+Darren has one extra step: either `export SPL_YOLO=1` above the load line in
+his startup file, or a yes to the installer's safety question.
+
+The installer only asks that question after the user has chosen to customize,
+and the answer defaults to no. Pressing Enter through the installer always
+leaves the check on. `--no-prompt` never turns it off.
 
 ## Checked by
 
 `test.sh` asserts the flag is absent by default and present under `SPL_YOLO=1`,
-for both `cc` and `cx`. Four of its thirteen checks cover this decision.
+for both `cc` and `cx`, and that the installer saves no `SPL_YOLO=1` when told
+no. Five of its twenty-seven checks cover this decision.

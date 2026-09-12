@@ -23,11 +23,33 @@ cd ~/src/spl-alias-wrappers
 ./install.sh
 ```
 
-Then open a new terminal, or run `. ~/src/spl-alias-wrappers/aliases.sh` to
-start using them right now.
+The installer shows the five shortcuts and asks one question: do you want to
+change a name, or leave one out? Say no and you are done. Say yes and it walks
+through each one. Press Enter to keep a name, type a new one, or type `-` to
+skip that shortcut. If a name you pick is already a program on your machine, it
+tells you which one and asks before hiding it.
 
-`install.sh` backs up your startup file first, then adds one line to it. Run it
-twice and it tells you it is already done. It changes nothing else.
+Then open a new terminal.
+
+What it touches:
+
+- Your startup file (`~/.bashrc`, or `~/.zshrc` for zsh) gets one load line.
+  It backs the file up first, and never adds the line twice.
+- Your choices go in `~/.config/spl-alias-wrappers/config.sh`. That file lives
+  outside the repo, so `git pull` never undoes them.
+
+Nothing else. To set it up with no questions, say on a script or a fresh
+virtual machine:
+
+```bash
+./install.sh --no-prompt
+```
+
+## Change a name later
+
+Run `./install.sh` again and answer yes. Or open
+`~/.config/spl-alias-wrappers/config.sh`, change the name, and open a new
+terminal. A name set to `''` leaves that shortcut out.
 
 ## Update
 
@@ -44,8 +66,8 @@ shell picks up the change. There is no second install step.
 cd ~/src/spl-alias-wrappers && ./uninstall.sh
 ```
 
-It backs up your startup file, takes the one line back out, and leaves the rest
-of your setup alone.
+It backs up your startup file, takes the one line back out, deletes your saved
+names, and leaves the rest of your setup alone.
 
 ## Check that it works
 
@@ -53,7 +75,8 @@ of your setup alone.
 ./test.sh
 ```
 
-Thirteen checks, one line each. It needs no test tools, just bash.
+Twenty-seven checks, one line each. It needs no test tools, just bash. Every
+check runs in a throwaway home folder, so it never touches your own setup.
 
 ---
 
@@ -96,7 +119,8 @@ Say nothing and it prints how to use it. Match nothing and it says so.
 
 **Name clash.** `lsd` is also a real program, an `ls` replacement with colors,
 in the Ubuntu and Homebrew package lists. If you install that program, this
-shortcut hides it. Rename the function in `aliases.sh` if you want both.
+shortcut hides it. Run `./install.sh` and give this one a different name if you
+want both.
 
 ### `cc`
 
@@ -109,7 +133,8 @@ Starts Claude Code in the folder you are standing in.
 **Name clash, and this one matters.** `cc` is the old Unix name for the C
 compiler, and `/usr/bin/cc` exists on nearly every Linux box. This shortcut
 hides it. If you compile C, `cc hello.c` will start Claude Code instead of
-building your program. Use `gcc` or `clang` directly, or rename this one.
+building your program. The installer warns you about this one and offers to
+rename it. `cl` is free on most machines.
 
 ### `cx`
 
@@ -130,8 +155,10 @@ wanted to keep.
 **These shortcuts leave the question ON.** That is the whole point of shipping
 them this way. You get the short name without giving up the guard rail.
 
-If you want it off, you turn it off yourself, on purpose. Put this line in your
-own startup file, above the line `install.sh` added:
+If you want it off, you turn it off yourself, on purpose. Run `./install.sh`,
+say yes to changing names, and answer yes when it asks about the safety check.
+
+Or put this line in your own startup file, above the line `install.sh` added:
 
 ```bash
 export SPL_YOLO=1

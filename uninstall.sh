@@ -19,8 +19,15 @@ for RC in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc" "$HOME/.profile";
     removed=1
 done
 
+CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/spl-alias-wrappers"
+if [ -f "$CONF_DIR/config.sh" ]; then
+    rm -f "$CONF_DIR/config.sh" && rmdir "$CONF_DIR" 2>/dev/null
+    echo "Removed your saved names in $CONF_DIR"
+    removed=1
+fi
+
 if [ "$removed" -eq 0 ]; then
-    echo "Not installed in any startup file. Nothing to do."
+    echo "Not installed. Nothing to do."
     exit 0
 fi
 
