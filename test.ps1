@@ -34,7 +34,10 @@ function Run([string]$Settings, [string]$Code, [string]$Before = '') {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
     if ($Settings) { [IO.File]::WriteAllText((Join-Path $dir 'config'), $Settings) }
     $q = $source -replace "'", "''"
-    $text = "$Before`n. '$q'`n$Code"
+    # Send the child's error text to its normal output. Windows PowerShell 5.1
+    # tries to read a child PowerShell's error stream as XML and fails on
+    # plain text, which is exactly what the shortcuts print on a miss.
+    $text = "[Console]::SetError([Console]::Out)`n$Before`n. '$q'`n$Code"
     # An encoded command survives quotes and new lines on every OS and edition.
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($text))
     $out = WithSettings $configRoot {
