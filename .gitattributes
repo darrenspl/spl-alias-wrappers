@@ -1,0 +1,4 @@
+# Every text file in this repo uses LF line endings, on every OS.
+# Git for Windows turns LF into CRLF on checkout by default, and bash then
+# fails on the first line of every script with: $'\r': command not found
+* text=auto eol=lf

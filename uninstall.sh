@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Take the load line back out of your shell startup file.
+# Your saved names stay, because PowerShell may still be using them.
 set -uo pipefail
 
 MARK="# >>> spl-alias-wrappers >>>"
 END="# <<< spl-alias-wrappers <<<"
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/spl-alias-wrappers/config"
 
 removed=0
-for RC in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc" "$HOME/.profile"; do
+for RC in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.bash_login" "$HOME/.zshrc" "$HOME/.profile"; do
     [ -f "$RC" ] || continue
     grep -qF "$MARK" "$RC" || continue
 
@@ -19,17 +21,14 @@ for RC in "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.zshrc" "$HOME/.profile";
     removed=1
 done
 
-CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/spl-alias-wrappers"
-if [ -f "$CONF_DIR/config.sh" ]; then
-    rm -f "$CONF_DIR/config.sh" && rmdir "$CONF_DIR" 2>/dev/null
-    echo "Removed your saved names in $CONF_DIR"
-    removed=1
-fi
-
 if [ "$removed" -eq 0 ]; then
-    echo "Not installed. Nothing to do."
-    exit 0
+    echo "Not installed for bash or zsh. Nothing to do."
+else
+    echo
+    echo "Open a new terminal, and the shortcuts are gone."
 fi
 
-echo
-echo "Open a new terminal, or run: unset SPL_ALIAS_WRAPPERS_LOADED"
+if [ -f "$CONF" ]; then
+    echo "Your saved names are still in $CONF."
+    echo "Delete that file once you are done with both bash and PowerShell."
+fi

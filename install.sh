@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# Install the five shortcuts, and ask whether you want different names.
+# Install the five shortcuts for bash or zsh, and ask whether you want other names.
 #
-#   ./install.sh               asks a few questions, Enter keeps what is shown
-#   ./install.sh --no-prompt   no questions, keeps saved choices or the defaults
+#   bash install.sh               asks a few questions, Enter keeps what is shown
+#   bash install.sh --no-prompt   no questions, keeps saved choices or the defaults
 #
 # Safe to run again. Run it again any time to change a name.
+# Using PowerShell? Run install.ps1 instead. Both read the same saved names.
 set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$REPO/aliases.sh"
 CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/spl-alias-wrappers"
-CONF="$CONF_DIR/config.sh"
+CONF="$CONF_DIR/config"
 MARK="# >>> spl-alias-wrappers >>>"
 END="# <<< spl-alias-wrappers <<<"
 
@@ -18,29 +19,28 @@ ASK=1
 case "${1:-}" in
     "")          ;;
     --no-prompt) ASK=0 ;;
-    -h|--help)   sed -n '2,7p' "$0"; exit 0 ;;
+    -h|--help)   sed -n '2,9p' "$0"; exit 0 ;;
     *)           echo "install: unknown option '$1'. Try --help." >&2; exit 2 ;;
 esac
 
 [ -f "$SRC" ] || { echo "install: cannot find $SRC" >&2; exit 1; }
 
-KEYS=(LSA C LSD CC CX)
-DEFAULTS=(lsa c lsd cc cx)
+KEYS=(lsa c lsd cc cx)
 WHAT=("list every file, hidden ones too" "clear the screen" "find folders by name"
       "start Claude Code" "start OpenAI Codex")
 
 # ── Start from the last run's choices, or the defaults ─────────────────────
+NAMES=(lsa c lsd cc cx)
 YOLO=0
 if [ -f "$CONF" ]; then
-    # shellcheck disable=SC1090
-    . "$CONF"
-    grep -q '^SPL_YOLO=1' "$CONF" && YOLO=1
+    while IFS='=' read -r key value || [ -n "$key" ]; do
+        value="${value%$'\r'}"
+        for i in "${!KEYS[@]}"; do
+            if [ "$key" = "${KEYS[i]}" ]; then NAMES[i]="$value"; fi
+        done
+        if [ "$key" = yolo ] && [ "$value" = 1 ]; then YOLO=1; fi
+    done < "$CONF"
 fi
-NAMES=()
-for i in "${!KEYS[@]}"; do
-    var="SPL_NAME_${KEYS[i]}"
-    if [ -n "${!var+set}" ]; then NAMES[i]="${!var}"; else NAMES[i]="${DEFAULTS[i]}"; fi
-done
 
 # ── Small helpers ───────────────────────────────────────────────────────────
 # ask <prompt>: reads one line into REPLY. At end of input it stops asking and
@@ -50,6 +50,7 @@ ask() {
     [ "$ASK" = 1 ] || return 1
     printf '%s' "$1" >&2
     IFS= read -r REPLY || { ASK=0; REPLY=""; echo >&2; return 1; }
+    REPLY="${REPLY%$'\r'}"
 }
 yesno() { ask "$1 [y/N] " && [[ "$REPLY" =~ ^[Yy] ]]; }
 
@@ -134,14 +135,14 @@ fi
 mkdir -p "$CONF_DIR" || { echo "install: could not create $CONF_DIR" >&2; exit 1; }
 {
     echo "# spl-alias-wrappers settings, written by install.sh on $(date +%Y-%m-%d)."
-    echo "# Change a name here, then open a new terminal. A name of '' leaves that"
-    echo "# shortcut out. Or run install.sh again and answer the questions."
+    echo "# One shortcut per line: shortcut=the name you type. An empty name leaves"
+    echo "# that shortcut out. yolo=1 turns OFF the safety check for Claude Code and"
+    echo "# Codex. Bash and PowerShell both read this file. Open a new terminal after"
+    echo "# you change it."
     for i in "${!KEYS[@]}"; do
-        printf "SPL_NAME_%s='%s'   # %s\n" "${KEYS[i]}" "${NAMES[i]}" "${WHAT[i]}"
+        printf '%s=%s\n' "${KEYS[i]}" "${NAMES[i]}"
     done
-    if [ "$YOLO" = 1 ]; then
-        echo "SPL_YOLO=1   # safety check OFF for Claude Code and Codex"
-    fi
+    printf 'yolo=%s\n' "$YOLO"
 } > "$CONF.new" && mv "$CONF.new" "$CONF" || { echo "install: could not write $CONF" >&2; exit 1; }
 
 # ── Add the load line to the startup file your shell reads ──────────────────
@@ -150,9 +151,17 @@ case "${SHELL##*/}" in
     bash) RC="$HOME/.bashrc" ;;
     *)    RC="$HOME/.profile" ;;
 esac
-# macOS bash reads .bash_profile for a login shell, and often skips .bashrc.
-if [ "${SHELL##*/}" = "bash" ] && [ "$(uname -s)" = "Darwin" ]; then
-    RC="$HOME/.bash_profile"
+# macOS Terminal and Git Bash on Windows open a login shell. Bash reads only the
+# first of these three files that exists, so write to that one. Making a new
+# .bash_profile would quietly stop an existing .profile from loading.
+if [ "${SHELL##*/}" = bash ]; then
+    case "$(uname -s)" in
+        Darwin|MINGW*|MSYS*|CYGWIN*)
+            RC="$HOME/.bash_profile"
+            for f in .bash_profile .bash_login .profile; do
+                if [ -f "$HOME/$f" ]; then RC="$HOME/$f"; break; fi
+            done ;;
+    esac
 fi
 
 touch "$RC" || { echo "install: cannot write to $RC" >&2; exit 1; }
@@ -163,7 +172,7 @@ else
     cp "$RC" "$BACKUP" || { echo "install: could not back up $RC" >&2; exit 1; }
     {
         printf '\n%s\n' "$MARK"
-        printf '# Shortcuts from %s. Remove with %s/uninstall.sh\n' "$REPO" "$REPO"
+        printf '# Shortcuts from %s. Remove with: bash %s/uninstall.sh\n' "$REPO" "$REPO"
         printf '[ -f "%s" ] && . "%s"\n' "$SRC" "$SRC"
         printf '%s\n' "$END"
     } >> "$RC" || { echo "install: could not write to $RC" >&2; exit 1; }
@@ -180,7 +189,7 @@ show
 for i in "${!KEYS[@]}"; do
     [ -n "${NAMES[i]}" ] || continue
     used=$(clash "${NAMES[i]}")
-    [ -n "$used" ] && echo "  Note: '${NAMES[i]}' hides $used. Run ./install.sh again to rename it."
+    [ -n "$used" ] && echo "  Note: '${NAMES[i]}' hides $used. Run install.sh again to rename it."
 done
 echo
 if [ "$YOLO" = 1 ]; then

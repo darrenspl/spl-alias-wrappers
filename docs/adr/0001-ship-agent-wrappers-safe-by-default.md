@@ -39,8 +39,9 @@ one variable in his own startup file and his daily use is unchanged.
 
 ## Cost
 
-Darren has one extra step: either `export SPL_YOLO=1` above the load line in
-his startup file, or a yes to the installer's safety question.
+Darren has one extra step: `yolo=1` in `~/.config/spl-alias-wrappers/config`,
+`export SPL_YOLO=1` above the load line in bash or zsh, or a yes to the
+installer's safety question.
 
 The installer only asks that question after the user has chosen to customize,
 and the answer defaults to no. Pressing Enter through the installer always
@@ -48,6 +49,6 @@ leaves the check on. `--no-prompt` never turns it off.
 
 ## Checked by
 
-`test.sh` asserts the flag is absent by default and present under `SPL_YOLO=1`,
-for both `cc` and `cx`, and that the installer saves no `SPL_YOLO=1` when told
-no. Five of its twenty-seven checks cover this decision.
+`test.sh` and `test.ps1` each assert the flags are absent by default, present
+under `yolo=1`, absent under `yolo=0`, and that the installer saves `yolo=0`
+when told no. Both run on Linux, macOS and Windows on every push.

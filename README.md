@@ -1,9 +1,11 @@
 # spl-alias-wrappers
 
+[![test](https://github.com/darrenspl/spl-alias-wrappers/actions/workflows/test.yml/badge.svg)](https://github.com/darrenspl/spl-alias-wrappers/actions/workflows/test.yml)
+
 Five shell shortcuts I use every day. This repo is how I put them on a new
 machine, and how you can put them on yours.
 
-Works in bash and zsh, on Linux, WSL2 and macOS.
+Works in bash, zsh and PowerShell, on Linux, macOS and Windows.
 
 ## The five
 
@@ -17,39 +19,77 @@ Works in bash and zsh, on Linux, WSL2 and macOS.
 
 ## Install
 
+### macOS, Linux, WSL2 or Git Bash
+
 ```bash
 git clone https://github.com/darrenspl/spl-alias-wrappers.git ~/src/spl-alias-wrappers
 cd ~/src/spl-alias-wrappers
-./install.sh
+bash install.sh
 ```
 
-The installer shows the five shortcuts and asks one question: do you want to
-change a name, or leave one out? Say no and you are done. Say yes and it walks
-through each one. Press Enter to keep a name, type a new one, or type `-` to
-skip that shortcut. If a name you pick is already a program on your machine, it
-tells you which one and asks before hiding it.
+### Windows PowerShell or PowerShell 7
+
+```powershell
+git clone https://github.com/darrenspl/spl-alias-wrappers.git $HOME/src/spl-alias-wrappers
+cd $HOME/src/spl-alias-wrappers
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+Using PowerShell 7? Start it with `pwsh` in place of `powershell`. Windows
+PowerShell and PowerShell 7 each keep their own profile, so run the installer
+once from each one you use.
+
+`-ExecutionPolicy Bypass` lets the installer itself run on a fresh Windows
+computer, where scripts are blocked out of the box. If your account still
+blocks scripts when a new window opens, the installer tells you, shows the
+usual fix, and asks before it changes anything.
+
+### What the installer does
+
+It shows the five shortcuts and asks one question: do you want to change a
+name, or leave one out? Say no and you are done. Say yes and it walks through
+each one. Press Enter to keep a name, type a new one, or type `-` to skip that
+shortcut. If a name you pick is already a program on your computer, it tells you
+which one and asks before hiding it.
 
 Then open a new terminal.
 
-What it touches:
+It touches two things, and nothing else:
 
-- Your startup file (`~/.bashrc`, or `~/.zshrc` for zsh) gets one load line.
-  It backs the file up first, and never adds the line twice.
-- Your choices go in `~/.config/spl-alias-wrappers/config.sh`. That file lives
-  outside the repo, so `git pull` never undoes them.
+- **Your startup file** gets one load line. That is `~/.bashrc` or
+  `~/.bash_profile` for bash, `~/.zshrc` for zsh, and your profile for
+  PowerShell. It backs the file up first, and never adds the line twice.
+- **Your choices** go in `~/.config/spl-alias-wrappers/config`. That file lives
+  outside the repo, so `git pull` never undoes them. Bash and PowerShell both
+  read it, so Git Bash and PowerShell on the same Windows computer agree.
+  WSL2 has its own home folder, so install there on its own.
 
-Nothing else. To set it up with no questions, say on a script or a fresh
-virtual machine:
+To set it up with no questions, say on a fresh virtual machine:
 
 ```bash
-./install.sh --no-prompt
+bash install.sh --no-prompt
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1 -NoPrompt
 ```
 
 ## Change a name later
 
-Run `./install.sh` again and answer yes. Or open
-`~/.config/spl-alias-wrappers/config.sh`, change the name, and open a new
-terminal. A name set to `''` leaves that shortcut out.
+Run the installer again and answer yes. Or open
+`~/.config/spl-alias-wrappers/config`, change the name after the `=`, and open a
+new terminal:
+
+```
+lsa=lsa
+c=c
+lsd=folders
+cc=cl
+cx=
+yolo=0
+```
+
+An empty name, like `cx=` above, leaves that shortcut out.
 
 ## Update
 
@@ -57,26 +97,40 @@ terminal. A name set to `''` leaves that shortcut out.
 cd ~/src/spl-alias-wrappers && git pull
 ```
 
-That is the whole update. The startup line points at this folder, so every new
-shell picks up the change. There is no second install step.
+That is the whole update, for every shell. The load line points at this folder,
+so every new terminal picks up the change.
 
 ## Remove
 
 ```bash
-cd ~/src/spl-alias-wrappers && ./uninstall.sh
+bash uninstall.sh
 ```
 
-It backs up your startup file, takes the one line back out, deletes your saved
-names, and leaves the rest of your setup alone.
+```powershell
+powershell -ExecutionPolicy Bypass -File uninstall.ps1
+```
+
+Each one backs up your startup file, takes the load line back out, and leaves
+the rest of your setup alone. Your saved names stay, in case the other shell
+still uses them. Delete `~/.config/spl-alias-wrappers` when you are done with
+both.
 
 ## Check that it works
 
 ```bash
-./test.sh
+bash test.sh
 ```
 
-Twenty-seven checks, one line each. It needs no test tools, just bash. Every
-check runs in a throwaway home folder, so it never touches your own setup.
+```powershell
+./test.ps1
+```
+
+`test.sh` runs 30 checks in bash, plus 6 more in zsh when zsh is installed.
+`test.ps1` runs 33 checks. Neither needs test tools, and every check runs in a
+throwaway folder, so it never touches your own setup.
+
+Every push runs both on real Linux, macOS and Windows machines, including
+Windows PowerShell 5.1 and Git Bash. The badge at the top shows the last result.
 
 ---
 
@@ -84,20 +138,14 @@ check runs in a throwaway home folder, so it never touches your own setup.
 
 ### `lsa`
 
-```
-lsa
-```
-
-Short for `ls -la`. Lists every file in the folder you are standing in,
-including the hidden ones that start with a dot, with size and date.
+Lists every file in the folder you are standing in, including hidden ones, with
+size and date. In bash and zsh it is `ls -la`. In PowerShell it is
+`Get-ChildItem -Force`.
 
 ### `c`
 
-```
-c
-```
-
-Short for `clear`. Wipes the screen. One keystroke instead of five.
+Clears the screen. `clear` in bash and zsh, `Clear-Host` in PowerShell. One
+keystroke instead of five.
 
 ### `lsd <word>`
 
@@ -113,36 +161,30 @@ my-plane-notes
 
 Lists folders in the current directory whose name holds that word. Upper and
 lower case do not matter. It looks one level down, no deeper, so it stays fast
-in a folder with hundreds of projects.
+in a folder with hundreds of projects. Say nothing and it shows how to use it.
+Match nothing and it says so.
 
-Say nothing and it prints how to use it. Match nothing and it says so.
-
-**Name clash.** `lsd` is also a real program, an `ls` replacement with colors,
-in the Ubuntu and Homebrew package lists. If you install that program, this
-shortcut hides it. Run `./install.sh` and give this one a different name if you
-want both.
+**Name clash on macOS and Linux.** `lsd` is also a real program, an `ls`
+replacement with colors, in the Ubuntu and Homebrew package lists. If you
+install that program, this shortcut hides it. Run the installer and give this
+one a different name if you want both.
 
 ### `cc`
 
-```
-cc
-```
+Starts Claude Code in the folder you are standing in. If Claude Code is not
+installed yet, it says so and shows where to get it.
 
-Starts Claude Code in the folder you are standing in.
-
-**Name clash, and this one matters.** `cc` is the old Unix name for the C
-compiler, and `/usr/bin/cc` exists on nearly every Linux box. This shortcut
-hides it. If you compile C, `cc hello.c` will start Claude Code instead of
-building your program. The installer warns you about this one and offers to
-rename it. `cl` is free on most machines.
+**Name clash on macOS and Linux, and this one matters.** `cc` is the old Unix
+name for the C compiler, and `/usr/bin/cc` exists on nearly every Linux box.
+This shortcut hides it. If you compile C, `cc hello.c` will start Claude Code
+instead of building your program. The installer warns you about this one and
+offers to rename it. `cl` is free on most machines. Windows has no `cc`, so
+PowerShell users can ignore this.
 
 ### `cx`
 
-```
-cx
-```
-
-Starts OpenAI Codex in the folder you are standing in.
+Starts OpenAI Codex in the folder you are standing in. Same "not installed"
+message as `cc`.
 
 ---
 
@@ -155,14 +197,10 @@ wanted to keep.
 **These shortcuts leave the question ON.** That is the whole point of shipping
 them this way. You get the short name without giving up the guard rail.
 
-If you want it off, you turn it off yourself, on purpose. Run `./install.sh`,
-say yes to changing names, and answer yes when it asks about the safety check.
-
-Or put this line in your own startup file, above the line `install.sh` added:
-
-```bash
-export SPL_YOLO=1
-```
+If you want it off, you turn it off yourself, on purpose. Run the installer, say
+yes to changing names, and answer yes when it asks about the safety check. Or
+set `yolo=1` in `~/.config/spl-alias-wrappers/config`. In bash and zsh,
+`export SPL_YOLO=1` above the load line works too.
 
 Now `cc` and `cx` will run anything without asking you first.
 
@@ -175,14 +213,29 @@ make your own call.
 
 ---
 
-## Why one file and not five
+## What is in here
 
-Five shortcuts is about thirty lines of shell. A folder for each one would give
-you five README files to keep in step and five ways to end up half installed.
-One file, one load line, one `git pull` to update.
+| File | What it is |
+|---|---|
+| `aliases.sh` | the five shortcuts for bash and zsh |
+| `aliases.ps1` | the same five for PowerShell |
+| `install.sh`, `install.ps1` | ask about names, save them, add the load line |
+| `uninstall.sh`, `uninstall.ps1` | take the load line back out |
+| `test.sh`, `test.ps1` | the checks |
+| `.gitattributes` | keeps every file on LF line endings, even on Windows |
+| `.github/workflows/test.yml` | runs both checks on Linux, macOS and Windows |
 
-If one of these ever grows into a real program with its own options and its own
-tests, it earns its own folder that day.
+## Why two versions
+
+Bash cannot run inside plain PowerShell, and a lot of Windows users never leave
+PowerShell. So each shortcut is written twice, once per shell. The two stay in
+step three ways: they read the same settings file, they check the same
+behavior, and every push tests both on all three operating systems. Details in
+`docs/adr/0002-ship-a-powershell-version.md`.
+
+Five shortcuts is still small enough to read every line of both in a few
+minutes. If one ever grows into a real program with its own options and tests,
+it earns its own folder that day.
 
 ## The bigger list
 

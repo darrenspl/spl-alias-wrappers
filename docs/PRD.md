@@ -15,12 +15,18 @@ update, remove and check them.
 
 ## What it must do
 
-- Install with one clone and one script, on Linux, WSL2 and macOS, in bash or zsh.
+- Install with one clone and one script, on Linux, macOS and Windows, in bash,
+  zsh, Windows PowerShell 5.1 or PowerShell 7.
+- Let the user rename or leave out any shortcut, and keep those choices in one
+  settings file that bash and PowerShell both read.
+- Behave the same in bash and PowerShell. Where a shell cannot do the same
+  thing, say so in the README.
 - Update with `git pull` and nothing else.
 - Never overwrite or damage a startup file. Back it up, add one marked line.
-- Uninstall cleanly, leaving no trace but the backup.
+- Uninstall cleanly, leaving only the backup and the saved names.
 - Ship `cc` and `cx` with their agent safety checks ON. See ADR 0001.
-- Prove itself with a test script that needs no test tools.
+- Prove itself with a test script per shell that needs no test tools, run on
+  real Linux, macOS and Windows machines on every push.
 
 ## What it is not
 
@@ -30,5 +36,5 @@ update, remove and check them.
 
 ## Done looks like
 
-`./test.sh` passes on a clean machine, and a student who has never seen this
+`bash test.sh` and `./test.ps1` pass on a clean machine, and a student who has never seen this
 repo can read the README and be running `lsd` in under two minutes.
