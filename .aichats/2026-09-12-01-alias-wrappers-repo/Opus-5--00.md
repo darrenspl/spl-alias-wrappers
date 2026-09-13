@@ -15,9 +15,9 @@ Darren started with an empty repo and ended with a tagged, tested, public releas
 
 In order:
 
-1. **Remotes.** Ran `/spl-remotes-to-add`. The repo was empty, so a one-line `README.md` became the first commit. Added `origin` (git.spl.tech, super-power-labs org) and `alt` (pool NAS over Tailscale). Darren then asked for GitHub too: added as `gh` (`https://github.com/darrenspl/spl-alias-wrappers`, public).
-2. **Inventory.** "list out all alias wrappers we have." Dumped a live shell: 85 aliases and 24 functions from three files. Wrote `docs/ALIASES.md`.
-3. **Narrowed.** "I'm looking for only aliases I created with you like, lsa, lsd, c, cc, cx." Those live in `~/.claude/shell/shared-aliases.sh`.
+1. **Remotes.** Ran `/spl-remotes-to-add`. The repo was empty, so a one-line `README.md` became the first commit. Added `origin` (Darren's private git server) and `alt` (his private backup mirror). Darren then asked for GitHub too: added as `gh` (`https://github.com/darrenspl/spl-alias-wrappers`, public).
+2. **Inventory.** "list out all alias wrappers we have." Dumped a live shell: 85 aliases and 24 functions from three files. Wrote `docs/ALIASES.md`. It named private machines and projects, so it was removed on 2026-09-13.
+3. **Narrowed.** "I'm looking for only aliases I created with you like, lsa, lsd, c, cc, cx." Those live in Darren's shared shell config.
 4. **Repo purpose.** Darren wants one place to install his top shortcuts on a new workstation, and to share with students and viewers. Asked whether to use a folder per alias. Recommended one file instead, installed by a single source line so `git pull` is the update.
 5. **Name clashes.** Found `cc` hides `/usr/bin/cc` (the C compiler) and `lsd` hides a real apt package. Darren asked for a rename table. Recommended keeping the names and warning in the README.
 6. **Interactive installer.** "could we include a script that installs it all and asks if they want to customize any of them?" `install.sh` now asks to rename or skip each shortcut and saves the choices outside the repo.
@@ -26,6 +26,7 @@ In order:
 9. **Status report** on 2026-09-13.
 10. **Restructure.** "i dont like all these loose files in the root. structure this repo like its a good and worthy repo." then "following all best practices". Moved scripts into `bash/` and `powershell/`, added lint, project files, changelog, tag `v0.1.0`.
 11. **This record.** "are you following my aichats protocol?" It was not being followed. Rebuilt with /spl-aichats-repair.
+12. **Privacy check.** "make sure there's no private information being shown in this repo since we are sharing it publically on github.com". gitleaks found no secrets in any file or commit. Removed `docs/ALIASES.md` and took private names out of this record and the protocol README.
 
 ## Key Decisions
 
@@ -47,7 +48,7 @@ In order:
 
 - `bash/`: `aliases.sh`, `install.sh`, `uninstall.sh`, `test.sh`
 - `powershell/`: `aliases.ps1`, `install.ps1`, `uninstall.ps1`, `test.ps1`, `PSScriptAnalyzerSettings.psd1`
-- `docs/`: `PRD.md`, `INTENT.md`, `tech-stack.md`, `ALIASES.md`, `adr/0001-ship-agent-wrappers-safe-by-default.md`, `adr/0002-ship-a-powershell-version.md`
+- `docs/`: `PRD.md`, `INTENT.md`, `tech-stack.md`, `adr/0001-ship-agent-wrappers-safe-by-default.md`, `adr/0002-ship-a-powershell-version.md`
 - `.github/`: `workflows/ci.yml`, `CONTRIBUTING.md`, `SECURITY.md`, `pull_request_template.md`, `ISSUE_TEMPLATE/bug_report.md`
 - Root: `README.md`, `LICENSE` (MIT), `CHANGELOG.md`, `.editorconfig`, `.gitattributes`, `.aichats/`
 
@@ -60,7 +61,7 @@ In order:
 | Commit | What |
 |---|---|
 | `9c30ea0` | Initial commit |
-| `36254cc` | Inventory of every alias on titan |
+| `36254cc` | Inventory of every alias on Darren's workstation (removed later as private) |
 | `8fa37db` | Shareable repo for lsa, c, lsd, cc, cx |
 | `64035df` | install.sh asks for custom names |
 | `d6480d9` | PowerShell, Windows and macOS support |
@@ -70,27 +71,26 @@ In order:
 | `b8f0cbd` | Changelog, editor settings, GitHub project files (tag `v0.1.0`) |
 | `b476638` | Clear the two CI warnings |
 
-**Remotes:** `origin` ssh://git@git.spl.tech:2222/super-power-labs/spl-alias-wrappers.git, `alt` ssh://git@pool.tail719f76.ts.net:2222/darren/spl-alias-wrappers.git, `gh` https://github.com/darrenspl/spl-alias-wrappers.git
+**Remotes:** `origin` and `alt` are Darren's private git server and backup mirror. `gh` is https://github.com/darrenspl/spl-alias-wrappers.git
 
 ## Lessons Learned
 
-- **A function must not trust the user's aliases.** `find` was aliased to `fd` on titan, and bash swapped it inside `lsd` while reading the function. Fixed with `command find`.
+- **A function must not trust the user's aliases.** `find` was aliased to `fd` on Darren's workstation, and bash swapped it inside `lsd` while reading the function. Fixed with `command find`.
 - **Tests must not depend on optional tools.** The safety checks failed on any machine without `claude` or `codex`. Moving the "is it installed" check to call time fixed it and removed the need for stand-ins.
 - **macOS Terminal and Git Bash open login shells.** Writing to a new `.bash_profile` would hide an existing `.profile`. The installer now picks the first of the three files bash actually reads.
 - **Git for Windows turns LF into CRLF** and breaks every bash script. `.gitattributes` with `eol=lf` prevents it.
 - **Windows PowerShell 5.1 reads a child PowerShell's output as XML.** The first fix only moved the problem from the error stream to the output stream. Starting the child through `System.Diagnostics.Process` fixed it for good.
-- **Piped test answers go off by one** when a machine triggers an extra prompt, like the `/usr/bin/cc` clash on titan.
+- **Piped test answers go off by one** when a machine triggers an extra prompt, like the `/usr/bin/cc` clash on a typical Linux box.
 - **Inline `python3 -c` with escaped quotes in f-strings broke a 9 minute CI wait.** Write the helper to a script file instead.
 - **Process miss:** the session-start hook warned twice that `.aichats/` and `INDEX.md` were missing. Claude wrote a two-line stub without reading the protocol, and never kept session records until Darren asked.
 
 ## Next Steps
 
 - [ ] Turn on GitHub private vulnerability reporting as `darrenspl` (repo Settings, Security). `gh` is only signed in as `PowerAppsDarren`.
-- [ ] Check whether Forgejo, behind `origin`, tries to run `.github/workflows`. The Forgejo CLI has no token.
+- [ ] Check whether the private git server behind `origin` tries to run `.github/workflows`.
 - [ ] Try both installers by hand on a real Windows console and a real Mac. CI only feeds answers in automatically.
-- [ ] Not installed on titan. Installing would drop `--remote-control` from Darren's `cc` and clash with `~/.claude/shell/shared-aliases.sh`.
-- [ ] `~/.claude/shell/shared-aliases.sh` holds a plain OpenClaw token in the `oc` alias, committed to `claude-config-titan`.
-- [ ] `docs/ALIASES.md` is public on GitHub and lists titan's host names and Tailscale network name.
+- [ ] Not installed on Darren's workstation yet. Installing would drop `--remote-control` from his current `cc` and clash with his shared shell config.
+- [x] Private details removed from the current files on 2026-09-13. Older commits still hold them until history is rewritten.
 - [ ] Empty `scripts/` folder at the repo root, made 2026-09-13 10:20, source unknown.
 - [ ] `/insights` snapshot from the repair skill not taken. It is a built-in command Claude cannot start.
 

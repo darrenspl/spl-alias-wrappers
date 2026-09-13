@@ -6,6 +6,11 @@ and version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Removed
+
+- `docs/ALIASES.md`, a personal inventory of one workstation that named private
+  machines and projects. It never held anything the shortcuts need.
+
 ## [0.1.0] - 2026-09-13
 
 First public release.

@@ -546,7 +546,7 @@ git show <commit-hash> -- .aichats/
 ## 🚀 Advanced Features
 
 ### AI Value Vault Synchronization
-- Sessions auto-sync to: `https://github.com/PowerAppsDarren/ai-value-vault`
+- Sessions auto-sync to: a private knowledge base repo
 - Creates shared knowledge base across projects
 - Enables cross-project learning
 
@@ -595,7 +595,7 @@ Track productivity metrics:
 
 - **Global Config:** `~/.claude/CLAUDE.md`
 - **Project Config:** `.claude/PROJECT.md`
-- **AI Value Vault:** `https://github.com/PowerAppsDarren/ai-value-vault`
+- **AI Value Vault:** a private knowledge base repo
 - **Command System:** Use `/_command help` for details
 
 ## ❓ FAQ FOR AI TOOLS v3.2

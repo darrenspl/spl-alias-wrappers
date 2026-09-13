@@ -236,7 +236,6 @@ spl-alias-wrappers/
 │   ├── PRD.md                    what this repo must do
 │   ├── INTENT.md                 why it exists
 │   ├── tech-stack.md             what it is built with
-│   ├── ALIASES.md                every alias on my own workstation
 │   └── adr/                      decisions, and the reasons for them
 ├── .github/
 │   ├── workflows/ci.yml          lint, then tests on Linux, macOS, Windows
@@ -263,12 +262,6 @@ behavior, and every push tests both on all three operating systems. Details in
 Five shortcuts is still small enough to read every line of both in a few
 minutes. If one ever grows into a real program with its own options and tests,
 it earns its own folder that day.
-
-## The bigger list
-
-`docs/ALIASES.md` holds every alias and function on my main workstation, about a
-hundred of them, and which file sets each one. That file is a record of my
-setup, not something to install.
 
 ## Contributing
 

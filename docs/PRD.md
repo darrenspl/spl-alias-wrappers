@@ -31,7 +31,7 @@ update, remove and check them.
 ## What it is not
 
 - Not a dotfiles manager. It manages one line in one file.
-- Not a record of Darren's full setup. That is `docs/ALIASES.md`, reference only.
+- Not a record of Darren's own machines. Nothing here names a host, a network or a client.
 - Not a place for anything machine specific, and never a place for a secret.
 
 ## Done looks like
