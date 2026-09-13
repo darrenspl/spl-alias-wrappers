@@ -11,13 +11,16 @@ jobs:
     name: lint (shellcheck and PSScriptAnalyzer)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: shellcheck
         run: shellcheck bash/*.sh
       - name: PSScriptAnalyzer
         shell: pwsh
         run: |
-          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          # GitHub's runners usually have it already. Install only when missing.
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer)) {
+            Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          }
           $issues = Invoke-ScriptAnalyzer -Path powershell -Recurse -Settings powershell/PSScriptAnalyzerSettings.psd1
           $issues | Format-Table -AutoSize
           if ($issues) { exit 1 }
@@ -31,7 +34,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run bash/test.sh
         shell: bash
         run: bash bash/test.sh
@@ -44,7 +47,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run powershell/test.ps1
         shell: pwsh
         run: ./powershell/test.ps1
@@ -53,7 +56,7 @@ jobs:
     name: Windows PowerShell 5.1 test.ps1
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run powershell/test.ps1
         shell: powershell
         run: .\powershell\test.ps1
