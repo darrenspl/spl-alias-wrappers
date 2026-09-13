@@ -1,6 +1,7 @@
 # spl-alias-wrappers
 
-[![test](https://github.com/darrenspl/spl-alias-wrappers/actions/workflows/test.yml/badge.svg)](https://github.com/darrenspl/spl-alias-wrappers/actions/workflows/test.yml)
+[![ci](https://github.com/darrenspl/spl-alias-wrappers/actions/workflows/ci.yml/badge.svg)](https://github.com/darrenspl/spl-alias-wrappers/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Five shell shortcuts I use every day. This repo is how I put them on a new
 machine, and how you can put them on yours.
@@ -24,7 +25,7 @@ Works in bash, zsh and PowerShell, on Linux, macOS and Windows.
 ```bash
 git clone https://github.com/darrenspl/spl-alias-wrappers.git ~/src/spl-alias-wrappers
 cd ~/src/spl-alias-wrappers
-bash install.sh
+bash bash/install.sh
 ```
 
 ### Windows PowerShell or PowerShell 7
@@ -32,7 +33,7 @@ bash install.sh
 ```powershell
 git clone https://github.com/darrenspl/spl-alias-wrappers.git $HOME/src/spl-alias-wrappers
 cd $HOME/src/spl-alias-wrappers
-powershell -ExecutionPolicy Bypass -File install.ps1
+powershell -ExecutionPolicy Bypass -File powershell/install.ps1
 ```
 
 Using PowerShell 7? Start it with `pwsh` in place of `powershell`. Windows
@@ -67,11 +68,11 @@ It touches two things, and nothing else:
 To set it up with no questions, say on a fresh virtual machine:
 
 ```bash
-bash install.sh --no-prompt
+bash bash/install.sh --no-prompt
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File install.ps1 -NoPrompt
+powershell -ExecutionPolicy Bypass -File powershell/install.ps1 -NoPrompt
 ```
 
 ## Change a name later
@@ -103,11 +104,13 @@ so every new terminal picks up the change.
 ## Remove
 
 ```bash
-bash uninstall.sh
+cd ~/src/spl-alias-wrappers
+bash bash/uninstall.sh
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File uninstall.ps1
+cd $HOME/src/spl-alias-wrappers
+powershell -ExecutionPolicy Bypass -File powershell/uninstall.ps1
 ```
 
 Each one backs up your startup file, takes the load line back out, and leaves
@@ -118,18 +121,19 @@ both.
 ## Check that it works
 
 ```bash
-bash test.sh
+bash bash/test.sh
 ```
 
 ```powershell
-./test.ps1
+./powershell/test.ps1
 ```
 
-`test.sh` runs 30 checks in bash, plus 6 more in zsh when zsh is installed.
-`test.ps1` runs 33 checks. Neither needs test tools, and every check runs in a
+`bash/test.sh` runs 30 checks in bash, plus 6 more in zsh when zsh is installed.
+`powershell/test.ps1` runs 33 checks. Neither needs test tools, and every check runs in a
 throwaway folder, so it never touches your own setup.
 
-Every push runs both on real Linux, macOS and Windows machines, including
+Every push lints both script sets with shellcheck and PSScriptAnalyzer, then
+runs both test suites on real Linux, macOS and Windows machines, including
 Windows PowerShell 5.1 and Git Bash. The badge at the top shows the last result.
 
 ---
@@ -215,15 +219,38 @@ make your own call.
 
 ## What is in here
 
-| File | What it is |
-|---|---|
-| `aliases.sh` | the five shortcuts for bash and zsh |
-| `aliases.ps1` | the same five for PowerShell |
-| `install.sh`, `install.ps1` | ask about names, save them, add the load line |
-| `uninstall.sh`, `uninstall.ps1` | take the load line back out |
-| `test.sh`, `test.ps1` | the checks |
-| `.gitattributes` | keeps every file on LF line endings, even on Windows |
-| `.github/workflows/test.yml` | runs both checks on Linux, macOS and Windows |
+```
+spl-alias-wrappers/
+├── bash/                         bash and zsh: Linux, macOS, WSL2, Git Bash
+│   ├── aliases.sh                the five shortcuts
+│   ├── install.sh                asks about names, adds the load line
+│   ├── uninstall.sh              takes the load line back out
+│   └── test.sh                   the checks
+├── powershell/                   Windows PowerShell 5.1 and PowerShell 7
+│   ├── aliases.ps1               the same four files, same jobs
+│   ├── install.ps1
+│   ├── uninstall.ps1
+│   ├── test.ps1
+│   └── PSScriptAnalyzerSettings.psd1   lint rules, with reasons
+├── docs/
+│   ├── PRD.md                    what this repo must do
+│   ├── INTENT.md                 why it exists
+│   ├── tech-stack.md             what it is built with
+│   ├── ALIASES.md                every alias on my own workstation
+│   └── adr/                      decisions, and the reasons for them
+├── .github/
+│   ├── workflows/ci.yml          lint, then tests on Linux, macOS, Windows
+│   ├── CONTRIBUTING.md           how to change things
+│   ├── SECURITY.md               how to report a security problem
+│   ├── pull_request_template.md
+│   └── ISSUE_TEMPLATE/bug_report.md
+├── .aichats/                     notes from the sessions that built this
+├── .editorconfig                 one style for every editor
+├── .gitattributes                LF line endings, even on Windows
+├── CHANGELOG.md
+├── LICENSE
+└── README.md
+```
 
 ## Why two versions
 
@@ -242,6 +269,16 @@ it earns its own folder that day.
 `docs/ALIASES.md` holds every alias and function on my main workstation, about a
 hundred of them, and which file sets each one. That file is a record of my
 setup, not something to install.
+
+## Contributing
+
+Pull requests are welcome. Read `.github/CONTRIBUTING.md` first: the short
+version is that every change goes into both `bash/` and `powershell/`. To report
+a security problem, see `.github/SECURITY.md`.
+
+## Changelog
+
+See `CHANGELOG.md`.
 
 ## License
 
