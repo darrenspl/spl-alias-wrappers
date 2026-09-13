@@ -1,16 +1,16 @@
 # Install the five shortcuts for PowerShell, and ask whether you want other names.
 #
-#   ./install.ps1              asks a few questions, Enter keeps what is shown
-#   ./install.ps1 -NoPrompt    no questions, keeps saved choices or the defaults
+#   ./powershell/install.ps1              asks a few questions, Enter keeps what is shown
+#   ./powershell/install.ps1 -NoPrompt    no questions, keeps saved choices or the defaults
 #
 # Safe to run again. Run it again any time to change a name. Run it once from
 # each PowerShell you use: Windows PowerShell 5.1 and PowerShell 7 each read
 # their own profile.
 #
 # If Windows says running scripts is disabled, start it like this:
-#   powershell -ExecutionPolicy Bypass -File install.ps1
+#   powershell -ExecutionPolicy Bypass -File powershell/install.ps1
 #
-# Using bash or zsh? Run install.sh instead. Both read the same saved names.
+# Using bash or zsh? Run bash/install.sh instead. Both read the same saved names.
 param(
     [switch]$NoPrompt,
     # Where to add the load line. Leave it out to use your normal profile.
@@ -38,7 +38,7 @@ $what = @{
     cx  = 'start OpenAI Codex'
 }
 
-# ── Start from the last run's choices, or the defaults ─────────────────────
+# -- Start from the last run's choices, or the defaults ---------------------
 $names = [ordered]@{ lsa = 'lsa'; c = 'c'; lsd = 'lsd'; cc = 'cc'; cx = 'cx' }
 $yolo = $false
 if (Test-Path -LiteralPath $config) {
@@ -49,7 +49,7 @@ if (Test-Path -LiteralPath $config) {
     }
 }
 
-# ── Small helpers ───────────────────────────────────────────────────────────
+# -- Small helpers -----------------------------------------------------------
 # Ask <prompt>: one line of input. At end of input it stops asking and every
 # later question keeps what is shown, so piping in answers never hangs.
 $script:asking = -not $NoPrompt
@@ -95,7 +95,7 @@ function Show {
     }
 }
 
-# ── Questions ───────────────────────────────────────────────────────────────
+# -- Questions ---------------------------------------------------------------
 Write-Host ''
 Write-Host 'spl-alias-wrappers'
 Write-Host ''
@@ -144,7 +144,7 @@ if (YesNo 'Change a name, or leave one out?') {
     }
 }
 
-# ── Save the choices ────────────────────────────────────────────────────────
+# -- Save the choices --------------------------------------------------------
 # Plain LF lines with no byte order mark, so bash reads the same file cleanly.
 New-Item -ItemType Directory -Force -Path $confDir | Out-Null
 $lines = @(
@@ -159,7 +159,7 @@ $lines += "yolo=$(if ($yolo) { 1 } else { 0 })"
 [IO.File]::WriteAllText("$config.new", (($lines -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding $false))
 Move-Item -Force -LiteralPath "$config.new" -Destination $config
 
-# ── Let the profile run, on Windows ─────────────────────────────────────────
+# -- Let the profile run, on Windows -----------------------------------------
 $policyNote = ''
 if ($onWindows) {
     # A zip download marks files as coming from the internet. Clear that mark
@@ -178,7 +178,7 @@ if ($onWindows) {
     if ($effective -in 'Restricted', 'AllSigned') {
         if ($setBy -in 'MachinePolicy', 'UserPolicy') {
             $policyNote = "  Your organization blocks PowerShell scripts ($effective, set by group policy).`n" +
-                          "  The shortcuts cannot load in PowerShell on this computer. WSL2 or Git Bash with install.sh will work."
+                          "  The shortcuts cannot load in PowerShell on this computer. WSL2 or Git Bash with bash/install.sh will work."
         } else {
             Write-Host ''
             Write-Host "PowerShell is set to $effective, which stops your profile from loading these shortcuts."
@@ -195,7 +195,7 @@ if ($onWindows) {
     }
 }
 
-# ── Add the load line to your profile ───────────────────────────────────────
+# -- Add the load line to your profile ---------------------------------------
 if (-not $ProfilePath) { $ProfilePath = @($PROFILE.CurrentUserAllHosts) }
 $quoted = $source -replace "'", "''"
 $nl = [Environment]::NewLine
@@ -226,7 +226,7 @@ foreach ($p in $ProfilePath) {
     [IO.File]::WriteAllText($p, $text + $block, (New-Object System.Text.UTF8Encoding $true))
 }
 
-# ── Report ──────────────────────────────────────────────────────────────────
+# -- Report ------------------------------------------------------------------
 Write-Host ''
 Write-Host 'Done.'
 $report | ForEach-Object { Write-Host $_ }

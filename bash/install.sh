@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Install the five shortcuts for bash or zsh, and ask whether you want other names.
 #
-#   bash install.sh               asks a few questions, Enter keeps what is shown
-#   bash install.sh --no-prompt   no questions, keeps saved choices or the defaults
+#   bash bash/install.sh               asks a few questions, Enter keeps what is shown
+#   bash bash/install.sh --no-prompt   no questions, keeps saved choices or the defaults
 #
 # Safe to run again. Run it again any time to change a name.
-# Using PowerShell? Run install.ps1 instead. Both read the same saved names.
+# Using PowerShell? Run powershell/install.ps1 instead. Both read the same saved names.
 set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -143,7 +143,11 @@ mkdir -p "$CONF_DIR" || { echo "install: could not create $CONF_DIR" >&2; exit 1
         printf '%s=%s\n' "${KEYS[i]}" "${NAMES[i]}"
     done
     printf 'yolo=%s\n' "$YOLO"
-} > "$CONF.new" && mv "$CONF.new" "$CONF" || { echo "install: could not write $CONF" >&2; exit 1; }
+} > "$CONF.new"
+if ! mv "$CONF.new" "$CONF"; then
+    echo "install: could not write $CONF" >&2
+    exit 1
+fi
 
 # ── Add the load line to the startup file your shell reads ──────────────────
 case "${SHELL##*/}" in

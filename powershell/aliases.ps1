@@ -1,9 +1,12 @@
-# spl-alias-wrappers  ·  https://github.com/darrenspl/spl-alias-wrappers
+# spl-alias-wrappers  -  https://github.com/darrenspl/spl-alias-wrappers
 #
-# The same five shortcuts as aliases.sh, for PowerShell. Works in Windows
+# The same five shortcuts as bash/aliases.sh, for PowerShell. Works in Windows
 # PowerShell 5.1, and in PowerShell 7 on Windows, macOS and Linux.
 #
-# Install:  install.ps1     Remove:  uninstall.ps1     Check:  test.ps1
+# From the repo folder:
+#   Install:  powershell -ExecutionPolicy Bypass -File powershell/install.ps1
+#   Remove:   powershell -ExecutionPolicy Bypass -File powershell/uninstall.ps1
+#   Check:    ./powershell/test.ps1
 #
 # Your names live in ~/.config/spl-alias-wrappers/config, the same plain
 # name=value file the bash version reads, so both shells agree.
@@ -17,7 +20,7 @@ $global:SplAliasWrappersLoaded = $true
 # Everything runs inside this block so its working variables do not end up in
 # your session. The functions it makes are global on purpose.
 & {
-    # ── Saved settings ──────────────────────────────────────────────────────
+    # -- Saved settings ------------------------------------------------------
     # Read line by line and never run as code, so a bad line is simply ignored.
     $names = [ordered]@{ lsa = 'lsa'; c = 'c'; lsd = 'lsd'; cc = 'cc'; cx = 'cx' }
     $yolo  = $env:SPL_YOLO -eq '1'
@@ -33,7 +36,7 @@ $global:SplAliasWrappersLoaded = $true
         }
     }
 
-    # ── What each shortcut does ─────────────────────────────────────────────
+    # -- What each shortcut does ---------------------------------------------
 
     # lsd <word>: list folders here whose name holds <word>, case ignored.
     #   lsd plane   shows  plane-api  Planeboard  my-plane-notes
@@ -91,7 +94,7 @@ $global:SplAliasWrappersLoaded = $true
         }
     }
 
-    # ── The names ───────────────────────────────────────────────────────────
+    # -- The names -----------------------------------------------------------
     # PowerShell aliases cannot take arguments, so every shortcut here is a
     # small function. An empty name leaves that shortcut out.
     $bodies = @{

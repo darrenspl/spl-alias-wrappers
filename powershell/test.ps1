@@ -1,5 +1,5 @@
 # Check that the shortcuts load, behave, and install cleanly. No test tools.
-# Run it: ./test.ps1     Prints one line per check, exits 1 on any failure.
+# Run it: ./powershell/test.ps1     Prints one line per check, exits 1 on any failure.
 #
 # Every check runs in a fresh PowerShell with no profile and a throwaway
 # settings folder, so nothing on your own machine is read or changed.
@@ -92,21 +92,21 @@ try {
     New-Item -ItemType Directory -Force -Path (Join-Path $dirs 'PlaneNotes'), (Join-Path $dirs 'other'), $empty | Out-Null
     $cdDirs = "Set-Location -LiteralPath '$($dirs -replace "'", "''")'"
 
-    # ── Default names ───────────────────────────────────────────────────────
+    # -- Default names -------------------------------------------------------
     foreach ($name in 'lsa', 'c', 'lsd', 'cc', 'cx') {
         Check "$name is a function" 'Function' (Run '' "(Get-Command $name).CommandType")
     }
     Check 'lsa lists hidden files too' 'True' `
           (Run '' "(Get-Command lsa).Definition.Contains('-Force')")
 
-    # ── lsd ─────────────────────────────────────────────────────────────────
+    # -- lsd -----------------------------------------------------------------
     Check 'lsd matches ignoring case' 'PlaneNotes' (Run '' "$cdDirs; lsd plane")
     Check 'lsd says so on no match' "no folder matches 'zzzz'" (Run '' "$cdDirs; lsd zzzz")
     Check 'lsd shows how to use it with no word' 'usage: lsd <word>' (Run '' 'lsd')
     Check 'lsd still works when an alias already had that name' 'PlaneNotes' `
           (Run '' "$cdDirs; lsd plane" 'Set-Alias -Name lsd -Value Get-Date -Scope Global')
 
-    # ── Claude Code and Codex ───────────────────────────────────────────────
+    # -- Claude Code and Codex -----------------------------------------------
     Check 'cc is safe by default' 'False' `
           (Run '' "(Get-Command SplCc).Definition.Contains('dangerously-skip-permissions')")
     Check 'cx is safe by default' 'False' `
@@ -121,7 +121,7 @@ try {
           'Claude Code is not installed. See https://claude.com/claude-code' `
           (Run '' "`$env:PATH = '$($empty -replace "'", "''")'; cc")
 
-    # ── Custom names ────────────────────────────────────────────────────────
+    # -- Custom names --------------------------------------------------------
     Check 'a new name works'            'Function' (Run "cc=cl`n" '(Get-Command cl).CommandType')
     Check 'the old name is handed back' 'free'     (Run "cc=cl`n" ($free -f 'cc'))
     Check 'an empty name leaves it out' 'free'     (Run "cx=`n"   ($free -f 'cx'))
@@ -132,7 +132,7 @@ try {
     Check 'loading twice is a no-op' 'Function' `
           (Run '' ". '$($source -replace "'", "''")'; (Get-Command lsa).CommandType")
 
-    # ── install.ps1 and uninstall.ps1 ───────────────────────────────────────
+    # -- install.ps1 and uninstall.ps1 ---------------------------------------
     $installer   = Join-Path $repo 'install.ps1'
     $uninstaller = Join-Path $repo 'uninstall.ps1'
     function Invoke-Script([string]$ConfigRoot, [string]$Answers, [string[]]$ScriptArgs) {

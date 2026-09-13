@@ -23,8 +23,8 @@ c. Generate both versions from one list of shortcuts.
 
 Option b.
 
-Each of `aliases`, `install`, `uninstall` and `test` exists as `.sh` and `.ps1`,
-side by side at the top of the repo. The PowerShell files work in Windows
+Each of `aliases`, `install`, `uninstall` and `test` exists twice: as `.sh` in
+`bash/` and as `.ps1` in `powershell/`, with the same four file names in each. The PowerShell files work in Windows
 PowerShell 5.1, which every Windows computer has, and in PowerShell 7 on any OS.
 
 ## Why
@@ -33,8 +33,8 @@ PowerShell 5.1, which every Windows computer has, and in PowerShell 7 on any OS.
   a shortcut they just watched someone use. That is the wrong first step.
 - Option c needs a generator, and the generator would be more code than the
   shortcuts. Five shortcuts do not need it.
-- Keeping the pairs side by side makes a change to one easy to spot as missing
-  from the other.
+- Matching file names in the two folders make a change to one easy to spot as
+  missing from the other.
 
 ## How the two stay in step
 

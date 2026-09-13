@@ -2,14 +2,15 @@
 # spl-alias-wrappers  ·  https://github.com/darrenspl/spl-alias-wrappers
 #
 # Five shortcuts for bash and zsh, on Linux, macOS, WSL2 and Git Bash.
-# Using PowerShell? aliases.ps1 is the same five shortcuts.
+# Using PowerShell? powershell/aliases.ps1 is the same five shortcuts.
 #
-# Install:  bash install.sh     Remove:  bash uninstall.sh     Check:  bash test.sh
+# From the repo folder:
+#   Install:  bash bash/install.sh   Remove:  bash bash/uninstall.sh   Check:  bash bash/test.sh
 #
 # The names are yours to change. install.sh saves them in
 # ~/.config/spl-alias-wrappers/config, a plain name=value file that lives
-# outside this repo, so a git pull never undoes them. aliases.ps1 reads the
-# same file.
+# outside this repo, so a git pull never undoes them. powershell/aliases.ps1
+# reads the same file.
 #
 # Nothing here is machine specific and nothing here holds a secret.
 
@@ -115,7 +116,10 @@ _spl_name() {
     return 0
 }
 
+# The name expands now, on purpose: it is the name being defined.
+# shellcheck disable=SC2139
 _spl_name "$_spl_n_lsa" && alias "$_spl_n_lsa=ls -la"
+# shellcheck disable=SC2139
 _spl_name "$_spl_n_c"   && alias "$_spl_n_c=clear"
 _spl_name "$_spl_n_lsd" && eval "$_spl_n_lsd() { _spl_lsd \"\$@\"; }"
 _spl_name "$_spl_n_cc"  && eval "$_spl_n_cc() { _spl_cc \"\$@\"; }"

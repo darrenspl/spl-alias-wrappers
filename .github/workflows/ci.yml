@@ -1,0 +1,59 @@
+# Lints both script sets, then runs both test suites on real Linux, macOS and
+# Windows machines, on every push and pull request.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    name: lint (shellcheck and PSScriptAnalyzer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck bash/*.sh
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          $issues = Invoke-ScriptAnalyzer -Path powershell -Recurse -Settings powershell/PSScriptAnalyzerSettings.psd1
+          $issues | Format-Table -AutoSize
+          if ($issues) { exit 1 }
+
+  bash:
+    name: bash test.sh on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows runs this in Git Bash. macOS runs the zsh checks as well.
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run bash/test.sh
+        shell: bash
+        run: bash bash/test.sh
+
+  powershell:
+    name: PowerShell 7 test.ps1 on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run powershell/test.ps1
+        shell: pwsh
+        run: ./powershell/test.ps1
+
+  windows-powershell:
+    name: Windows PowerShell 5.1 test.ps1
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run powershell/test.ps1
+        shell: powershell
+        run: .\powershell\test.ps1

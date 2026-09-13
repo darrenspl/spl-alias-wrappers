@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Check that the shortcuts load, behave, and install cleanly. No test tools.
-# Run it: bash test.sh     Prints one line per check, exits 1 on any failure.
+# Run it: bash bash/test.sh     Prints one line per check, exits 1 on any failure.
 #
 # Every check runs in a fresh shell with no startup file and a throwaway home
 # folder, so nothing on your own machine is read or changed. The zsh checks

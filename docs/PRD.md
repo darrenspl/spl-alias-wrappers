@@ -36,5 +36,5 @@ update, remove and check them.
 
 ## Done looks like
 
-`bash test.sh` and `./test.ps1` pass on a clean machine, and a student who has never seen this
+`bash bash/test.sh` and `./powershell/test.ps1` pass on a clean machine, and a student who has never seen this
 repo can read the README and be running `lsd` in under two minutes.
