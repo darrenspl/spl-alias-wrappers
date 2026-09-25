@@ -91,6 +91,8 @@ In order:
 - [ ] Try both installers by hand on a real Windows console and a real Mac. CI only feeds answers in automatically.
 - [ ] Not installed on Darren's workstation yet. Installing would drop `--remote-control` from his current `cc` and clash with his shared shell config.
 - [x] Private details removed from the current files on 2026-09-13. Older commits still hold them until history is rewritten.
+- [ ] 2026-09-24: Darren chose option a, rewrite history. A full backup bundle is at `~/src/.archive/spl-alias-wrappers-pre-rewrite-2026-09-24.bundle` (tree `2abbc91`). The rewrite itself was blocked by the tool's safety check, so Darren runs it by hand. See the last exchange of this session.
+- [x] 2026-09-24: `bash/` and `powershell/` stay at the top level, not under `scripts/`. The empty `scripts/` folder is gone.
 - [ ] Empty `scripts/` folder at the repo root, made 2026-09-13 10:20, source unknown.
 - [ ] `/insights` snapshot from the repair skill not taken. It is a built-in command Claude cannot start.
 
@@ -100,7 +102,7 @@ None. Repair writes the summary only. The verbatim record is the raw log below.
 
 ## Status
 
-🚧 In progress, reconstructed through 2026-09-13 11:41 EDT
+🚧 In progress, reconstructed through 2026-09-24 23:09 EDT
 
 ## Source
 
